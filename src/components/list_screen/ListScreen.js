@@ -2,161 +2,104 @@ import React, { Component } from 'react';
 import { Redirect } from 'react-router-dom'
 import { connect } from 'react-redux';
 import { compose } from 'redux';
-import ItemsList from './ItemsList.js'
 import { firestoreConnect } from 'react-redux-firebase';
 import { getFirestore } from 'redux-firestore';
 import { Modal, Button, Row, Col } from 'react-materialize';
 import EditControls from './EditControls';
 import { Rnd } from "react-rnd";
+import testJson from "./test.json"
+import Properties from "./Properties"
 
 class ListScreen extends Component {
-    state = {
-        controls: [],
-        field: "Null",
-        fontSize: 0,
-        backgroundColor: "Null",
-        borderColor: "Null",
-        borderThickeness: 0,
-        borderRadius: 0,
+
+    constructor(props) {
+        super(props);
+        this.state = {
+            controls: testJson.controls,
+            selected: -1,
+            selectedControl: {}
+        }
     }
 
-    sortCriteria = 'none';
-    changedTime = false;
-
-
-    handleController = (e) => {
-        console.log("controller clicked")
-        var len = this.state.controls.length;
-        console.log(len)
+    handleController = () => {
+        let key = this.state.controls.length;
         const newcontroller = {
-            key: len,
-            borderStyle: "solid",
+            key: key,
+            type: "container",
             width: "100px",
             height: "100px",
-            x: 0,
-            y: 0,
-
-            field: "Container",
-            fontSize: 10,
-            backgroundColor: "red",
+            x: 100,
+            y: 100,
+            backgroundColor: "#00ff6a",
             borderColor: "black",
+            borderStyle: "solid",
             borderWidth: 4,
             borderRadius: 4,
+            color: "#000",
+            fontSize: "12px"
         }
+
         this.setState({
-            controls: [...this.state.controls, newcontroller],
-            field: newcontroller.field,
-            fontSize: newcontroller.fontSize,
-            backgroundColor: newcontroller.backgroundColor,
-            borderColor: newcontroller.borderColor,
-            borderThickeness: newcontroller.borderWidth,
-            borderRadius: newcontroller.borderRadius
-        })
+            controls: [...this.state.controls, newcontroller]
+        });
         console.log('this.state :', this.state);
     }
 
-    handleChange = (e) => {
-        e.preventDefault();
-        const { target } = e;
-
-        this.setState(state => ({
-            ...state,
-            [target.id]: target.value,
-        }));
-
-        console.log(this.state)
-        // const fireStore = getFirestore();
-        // let dbitem = fireStore.collection('todoLists').doc(this.props.todoList.id);
-        // dbitem.update({ [target.id]: target.value });
-    }
-    updateTime = () => {
-        console.log("updating time")
-        let fireStore = getFirestore();
-        fireStore.collection('todoLists').doc(this.props.todoList.id).update({ time: Date.now() })
-    }
-
     updateState = (newState) => {
-        let newControls = this.state.controls.map((control) => {
+        const controls = this.state.controls.map((control) => {
             if (control.key === newState.key) {
-                console.log({ ...control, ...newState });
                 return { ...control, ...newState }
             } else {
                 return control;
             }
         })
-        console.log('this.state :', this.state);
+        let selectedControl = this.getSelectedElement(controls, newState.key);
+        // console.log('selectedControl :', selectedControl);
         this.setState({
-            controls: newControls
+            selectedControl,
+            selected: newState.key,
+            controls
         })
+        console.log('state :', this.state);
     }
+
+    getSelectedElement = (controls, key) => {
+        if (key === -1)
+            return {}
+        console.log(controls.filter((c) => c.key === key).pop());
+        return controls.filter((c) => c.key === key)[0];
+    }
+
 
     render() {
         const auth = this.props.auth;
-        let todoList = this.props.todoList;
 
         if (!auth.uid) {
             return <Redirect to="/" />;
         }
 
-        if (!todoList)
-            return <React.Fragment />
-
-        if (!this.changedTime) {
-            this.changedTime = true;
-            this.updateTime();
-        }
-
         return (
             <Row>
                 <Col s={3}>
-                    <div className="grey lighten-2 col">
-                        <div style={{ border: "5px solid black", width: "120px", height: "50px", backgroundColor: "white" }} onClick={this.handleController}>
+                    <div className="grey lighten-2">
+                        <div className="add-container" onClick={this.handleController}>
                             Add Container
                         </div>
                     </div>
                 </Col>
+                <Col s={3}>
+                    <Properties
+                        updateState={this.updateState}
+                        control={this.state.selectedControl}
+                    />
+                </Col>
                 <Col s={6}>
-                    <EditControls 
+                    <EditControls
                         updateState={this.updateState}
                         controls={this.state.controls}
                     />
                 </Col>
-
-                <Col s={3}>
-                    <div className="grey lighten-2 col">
-                        <div className="wireframe properties">
-                            <h4 className="grey-text text-darken-3 col s10">Properties</h4>
-                            <div className="padding_20 col">
-                                <div className="input-field col s6">
-                                    <label className="active text_16" htmlFor="name">Field</label>
-                                    <input className="text_20" type="text" name="field" id="field" onChange={this.handleChange} value={this.state.field} />
-                                </div>
-                                <div className="input-field col s6">
-                                    <label className="active text_16" htmlFor="name">Font Size</label>
-                                    <input className="text_20" type="text" name="fontSize" id="fontSize" onChange={this.handleChange} defaultValue={this.state.fontSize} />
-                                </div>
-                                <div className="input-field col s6">
-                                    <label className="active text_16" htmlFor="name">Background:</label>
-                                    <input className="text_20" type="text" name="backgroundColor" id="backgroundColor" onChange={this.handleChange} defaultValue={this.state.backgroundColor} />
-                                </div>
-                                <div className="input-field col s6">
-                                    <label className="active text_16" htmlFor="name">Border Color:</label>
-                                    <input className="text_20" type="text" name="borderColor" id="borderColor" onChange={this.handleChange} value={this.state.borderColor} />
-                                </div>
-                                <div className="input-field col s6">
-                                    <label className="active text_16" htmlFor="name">Border Thickness:</label>
-                                    <input className="text_20" type="text" name="borderThickeness" id="borderThickness" onChange={this.handleChange} value={this.state.borderThickeness} />
-                                </div>
-                                <div className="input-field col s6">
-                                    <label className="active text_16" htmlFor="name">Border Radius:</label>
-                                    <input className="text_20" type="text" name="borderRadius" id="borderRadius" onChange={this.handleChange} value={this.state.borderRadius} />
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </Col>
             </Row>);
-
     }
 }
 
@@ -166,7 +109,6 @@ const mapStateToProps = (state, ownProps) => {
     const todoList = todoLists ? todoLists[id] : null;
     if (todoList)
         todoList.id = id;
-
     return {
         todoList,
         auth: state.firebase.auth,

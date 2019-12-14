@@ -1,0 +1,34 @@
+{
+    "controls": [
+        {
+            "key": 0,
+            "type": "container",
+            "width": "100px",
+            "height": "100px",
+            "x": 100,
+            "y": 100,
+            "backgroundColor": "#8600ff",
+            "borderColor": "black",
+            "borderStyle": "solid",
+            "borderWidth": 4,
+            "borderRadius": 4,
+            "color": "#000",
+            "fontSize": "12px"
+        },
+        {
+            "key": 1,
+            "type": "button",
+            "width": "100px",
+            "height": "50px",
+            "x": 300,
+            "y": 150,
+            "backgroundColor": "#3000ff",
+            "borderColor": "black",
+            "borderStyle": "solid",
+            "borderWidth": 0,
+            "borderRadius": 4,
+            "color": "#000",
+            "fontSize": "12px"
+        }
+    ]
+}

@@ -7,9 +7,24 @@ import { Rnd } from "react-rnd";
 class EditControls extends Component {
 
     render() {
+
         return (
             <div style={{ border: "10px solid black", width: "600px", height: "800px", backgroundColor: "white" }}>
                 {this.props.controls.map((control) => {
+
+                    console.log('control :', control);
+                    let node;
+                    switch (control.type) {
+                        case "container":
+                            node = <div style={control} />
+                        case "button":
+                            node = <button style={control}> {control.text} </button>
+                        case "label":
+                            node = <div style={control}> {control.text} </div>
+                        case "textfield":
+                        default:
+
+                    };
 
                     return (<Rnd
                         size={{ width: control.width, height: control.height }}
@@ -32,9 +47,7 @@ class EditControls extends Component {
                         key={control.key}
                         bounds="parent"
                     >
-                        <div style={control}>
-
-                        </div>
+                        {node}
                     </Rnd>)
                 })}
 
@@ -51,14 +64,3 @@ const mapStateToProps = (state) => {
 };
 
 export default compose(connect(mapStateToProps))(EditControls);
-
-
-
-                        // onDragStop={(e, d) => { this.setState({ x: d.x, y: d.y }) }}
-                        // onResizeStop={(e, direction, ref, delta, position) => {
-                        //     this.setState({
-                        //         width: ref.style.width,
-                        //         height: ref.style.height,
-                        //         ...position,
-                        //     });
-                        // }}

@@ -9,15 +9,12 @@ import RegisterScreen from './components/register_screen/RegisterScreen.js';
 import LoginScreen from './components/login_screen/LoginScreen.js';
 import HomeScreen from './components/home_screen/HomeScreen.js';
 import ListScreen from './components/list_screen/ListScreen.js';
-import ItemScreen from './components/item_screen/ItemScreen.js';
 import DatabaseTester from './test/DatabaseTester';
 
 class App extends Component {
   render() {
     const { auth } = this.props;
 
-    // if auth is loaded then we render App.
-    // But if not then we doesn't render the one.
     if (auth.isLoaded) {
       return (
         <BrowserRouter>
