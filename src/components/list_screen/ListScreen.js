@@ -15,10 +15,15 @@ class ListScreen extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            controls: testJson.controls,
+            controls: testJson.wireframes[0].controls,
+            wireframeStyle: {
+                width: testJson.wireframes[0].width,
+                height: testJson.wireframes[0].height
+            },
             selected: -1,
             selectedControl: {}
         }
+        console.log(testJson.wireframes[0].width, testJson.wireframes[0].height)
     }
 
     handleController = () => {
@@ -95,6 +100,7 @@ class ListScreen extends Component {
                 </Col>
                 <Col s={6}>
                     <EditControls
+                        style={this.state.wireframeStyle}
                         updateState={this.updateState}
                         controls={this.state.controls}
                     />

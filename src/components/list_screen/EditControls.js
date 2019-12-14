@@ -7,9 +7,9 @@ import { Rnd } from "react-rnd";
 class EditControls extends Component {
 
     render() {
-
+        console.log('this.props', this.props)
         return (
-            <div style={{ border: "10px solid black", width: "600px", height: "800px", backgroundColor: "white" }}>
+            <div className="edit-controls" style={this.props.style}>
                 {this.props.controls.map((control) => {
 
                     console.log('control :', control);
