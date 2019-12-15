@@ -4,7 +4,7 @@ import { connect } from 'react-redux';
 import { compose } from 'redux';
 import { firestoreConnect } from 'react-redux-firebase';
 import { getFirestore } from 'redux-firestore';
-import { Modal, Button, Row, Col } from 'react-materialize';
+import { Modal, Button, Row, Col, TextInput } from 'react-materialize';
 import EditControls from './EditControls';
 import { Rnd } from "react-rnd";
 import testJson from "./test.json"
@@ -14,40 +14,130 @@ class ListScreen extends Component {
 
     constructor(props) {
         super(props);
+        console.log('this.props', this.props)
+        // console.log('wireframe', wireframe)
         this.state = {
-            controls: testJson.wireframes[0].controls,
+            controls: [],
             wireframeStyle: {
                 width: testJson.wireframes[0].width,
                 height: testJson.wireframes[0].height
             },
-            selected: -1,
             selectedControl: {}
         }
         console.log(testJson.wireframes[0].width, testJson.wireframes[0].height)
     }
 
-    handleController = () => {
-        let key = this.state.controls.length;
-        const newcontroller = {
-            key: key,
-            type: "container",
-            width: "100px",
-            height: "100px",
-            x: 100,
-            y: 100,
-            backgroundColor: "#00ff6a",
-            borderColor: "black",
-            borderStyle: "solid",
-            borderWidth: 4,
-            borderRadius: 4,
-            color: "#000",
-            fontSize: "12px"
+    componentDidMount() {
+        window.addEventListener("keydown", this.handleKeyDown);
+        console.log('mounting')
+        const { id } = this.props.match.params;
+        const firestore = getFirestore();
+
+        firestore.collection("wireframes").doc(id).get().then((data) => {
+            this.setState({
+                controls: data.data().controls
+            })
+        })
+    }
+    componentWillUnmount = () => {
+        window.removeEventListener("keydown", this.handleKeyDown);
+    }
+
+    handleKeyDown = (event) => {
+        console.log('event.keyCode', event.keyCode)
+        if (event.ctrlKey && event.keyCode === 68) {
+            console.log('duplicate')
+            this.handleDuplicate();
+        }
+        if (event.keyCode === 46) {
+            this.handleDelete();
+
+        }
+    }
+
+    handleDuplicate = () => {
+        let key = this.getHighKey();
+        const { controls, selectedControl } = this.state;
+        const duplicateControl = Object.assign({}, selectedControl, { key, x: selectedControl.x + 100, y: selectedControl.y + 100 });
+        this.setState({
+            controls: [...controls, duplicateControl]
+        })
+    }
+
+    handleDelete = () => {
+        this.setState({
+            controls: this.state.controls.filter((c) => c.key !== this.state.selectedControl.key)
+        })
+    }
+
+    getHighKey = () => {
+        let highKey = 0;
+        this.state.controls.forEach((arrayElement) => {
+            if (arrayElement.key > highKey)
+                highKey = arrayElement.key;
+        });
+        highKey++;
+        return highKey;
+    }
+
+
+    handleController = (id) => {
+        let key = this.getHighKey();
+        console.log('id', id)
+        let newcontroller;
+        switch (id) {
+            case "container":
+                newcontroller = {
+                    key: key,
+                    type: "container",
+                    width: "100px",
+                    height: "100px",
+                    x: 0,
+                    y: 0,
+                    backgroundColor: "#00ff6a",
+                    borderColor: "#dce775",
+                    borderStyle: "solid",
+                    borderWidth: 4,
+                    borderRadius: 4,
+                    color: "#000",
+                    fontSize: "12px",
+                    text: "container"
+                }
+                break;
+            case "button":
+                newcontroller = {
+                    key: key,
+                    type: "button",
+                    width: 80,
+                    height: 40,
+                    x: 0,
+                    y: 0,
+                    backgroundColor: "#555555",
+                    borderColor: "#dce775",
+                    borderStyle: "solid",
+                    borderWidth: 4,
+                    borderRadius: 10,
+                    color: '#ba68c8',
+                    fontSize: "12px",
+                    text: "button"
+                }
+                break;
+            case "label":
+            case "textfield":
+            default:
+                return;
         }
 
         this.setState({
             controls: [...this.state.controls, newcontroller]
         });
         console.log('this.state :', this.state);
+    }
+
+    unselect = () => {
+        this.setState({
+            selectedControl: {}
+        })
     }
 
     updateState = (newState) => {
@@ -75,6 +165,25 @@ class ListScreen extends Component {
         return controls.filter((c) => c.key === key)[0];
     }
 
+    handleZoom = (zoomIn) => {
+        const { width, height } = this.state.wireframeStyle;
+        if (zoomIn) {
+            this.setState({
+                wireframeStyle: {
+                    width: width * 1.3,
+                    height: height * 1.3
+                }
+            });
+        }
+        else {
+            this.setState({
+                wireframeStyle: {
+                    width: width * .7,
+                    height: height * .7
+                }
+            });
+        }
+    }
 
     render() {
         const auth = this.props.auth;
@@ -86,23 +195,66 @@ class ListScreen extends Component {
         return (
             <Row>
                 <Col s={3}>
-                    <div className="grey lighten-2">
-                        <div className="add-container" onClick={this.handleController}>
-                            Add Container
-                        </div>
-                    </div>
-                </Col>
-                <Col s={3}>
-                    <Properties
-                        updateState={this.updateState}
-                        control={this.state.selectedControl}
-                    />
+                    <Row>
+                        <Col s={6}>
+                            <i class="large material-icons" onClick={() => this.handleZoom(true)}>zoom_in</i>
+                        </Col>
+                        <Col s={6}>
+                            <i class="large material-icons" onClick={() => this.handleZoom(false)}>zoom_out</i>
+                        </Col>
+
+                        <Col s={6}>
+                            <TextInput
+                                defaultValue={this.state.wireframeStyle.width}
+                                label="Width"
+                                onChange={e => this.setState({ wireframeStyle: { ...this.state.wireframeStyle, width: e.target.value } })}
+                            />
+                        </Col>
+                        <Col s={6}>
+                            <TextInput
+                                defaultValue={this.state.wireframeStyle.height}
+                                label="Height"
+                                onChange={e => this.setState({ wireframeStyle: { ...this.state.wireframeStyle, height: e.target.value } })}
+                            />
+                        </Col>
+
+                        <Col s={6}>
+                            <div id="container" className="add-container" onClick={(e) => this.handleController(e.target.id)}>
+                                Container
+                            </div>
+                        </Col>
+                        <Col s={6}>
+                            <div id="label" className="add-container" onClick={(e) => this.handleController(e.target.id)}>
+                                Label
+                            </div>
+                        </Col>
+
+                        <Col s={6}>
+                            <div id="button" className="add-container" onClick={(e) => this.handleController(e.target.id)}>
+                                Button
+                            </div>
+                        </Col>
+                        <Col s={6}>
+                            <div id="textfield" className="add-container" onClick={(e) => this.handleController(e.target.id)}>
+                                Textfield
+                            </div>
+                        </Col>
+
+                    </Row>
+
                 </Col>
                 <Col s={6}>
                     <EditControls
                         style={this.state.wireframeStyle}
                         updateState={this.updateState}
                         controls={this.state.controls}
+                        unselect={this.unselect}
+                    />
+                </Col>
+                <Col s={3}>
+                    <Properties
+                        updateState={this.updateState}
+                        control={this.state.selectedControl}
                     />
                 </Col>
             </Row>);
@@ -111,12 +263,13 @@ class ListScreen extends Component {
 
 const mapStateToProps = (state, ownProps) => {
     const { id } = ownProps.match.params;
-    const { todoLists } = state.firestore.data;
-    const todoList = todoLists ? todoLists[id] : null;
-    if (todoList)
-        todoList.id = id;
+    const { wireframes } = state.firestore.data;
+    const wireframe = wireframes ? wireframes[id] : null;
+    // if (todoList)
+    //     todoList.id = id;
+    console.log('wireframe', wireframe)
     return {
-        todoList,
+        wireframe,
         auth: state.firebase.auth,
     };
 };
@@ -124,139 +277,7 @@ const mapStateToProps = (state, ownProps) => {
 export default compose(
     connect(mapStateToProps),
     firestoreConnect([
-        { collection: 'todoLists' },
+        { collection: 'wireframes' },
     ]),
 )(ListScreen);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// const SORT_BY_TASK_INCREASING = 'sort_by_task_increasing';
-// const SORT_BY_TASK_DECREASING = 'sort_by_task_decreasing';
-// const SORT_BY_DUE_DATE_INCREASING = 'sort_by_due_date_increasing';
-// const SORT_BY_DUE_DATE_DECREASING = 'sort_by_due_date_decreasing';
-// const SORT_BY_STATUS_INCREASING = 'sort_by_status_increasing';
-// const SORT_BY_STATUS_DECREASING = 'sort_by_status_decreasing';
-
-//     addItem = () => {
-//         console.log("Adding a new item");
-//         this.props.history.push({
-//             pathname: this.props.todoList.id + "/item/" + this.props.todoList.items.length,
-//         });
-//     }
-
-//     deleteList = () => {
-//         let fireStore = getFirestore();
-//         fireStore.collection('todoLists').doc(this.props.todoList.id).delete().then(function () {
-//             console.log("Document successfully deleted!");
-//         }).catch(function (error) {
-//             console.error("Error removing document: ", error);
-//         });
-
-//         this.props.history.goBack();
-//     }
-
-
-
-// sortByDescription = () => {
-//     if (this.sortCriteria !== SORT_BY_TASK_INCREASING)
-//         this.sortCriteria = SORT_BY_TASK_INCREASING
-//     else
-//         this.sortCriteria = SORT_BY_TASK_DECREASING;
-//     this.sortList(this.sortCriteria);
-// }
-
-// sortByDueDate = () => {
-//     if (this.sortCriteria !== SORT_BY_DUE_DATE_INCREASING)
-//         this.sortCriteria = SORT_BY_DUE_DATE_INCREASING;
-//     else
-//         this.sortCriteria = SORT_BY_DUE_DATE_DECREASING;
-//     this.sortList(this.sortCriteria);
-// }
-
-// sortByCompleted = () => {
-//     if (this.sortCriteria !== SORT_BY_STATUS_INCREASING)
-//         this.sortCriteria = SORT_BY_STATUS_INCREASING;
-//     else
-//         this.sortCriteria = SORT_BY_STATUS_DECREASING;
-//     this.sortList(this.sortCriteria);
-// }
-
-// sortList = (criteria) => {
-//     console.log("Sorting by: ", this.sortCriteria);
-//     let newItems = this.generateItemsInSortedOrder(criteria);
-//     for (let i = 0; i < newItems.length; i++) {
-//         newItems[i].key = i;
-//         newItems[i].id = i;
-//     }
-
-//     let firestore = getFirestore();
-//     firestore.collection("todoLists").doc(this.props.todoList.id).update({ items: newItems });
-// }
-
-// generateItemsInSortedOrder = (criteria) => {
-//     let newItems = Object.assign([], this.props.todoList.items);
-//     newItems.sort(function (a, b) {
-//         if (criteria === SORT_BY_TASK_INCREASING)
-//             return a.description.localeCompare(b.description);
-//         else if (criteria === SORT_BY_TASK_DECREASING)
-//             return b.description.localeCompare(a.description);
-//         else if (criteria === SORT_BY_DUE_DATE_INCREASING)
-//             return a.due_date.localeCompare(b.due_date);
-//         else if (criteria === SORT_BY_DUE_DATE_DECREASING)
-//             return b.due_date.localeCompare(a.due_date);
-//         else if (criteria === SORT_BY_STATUS_INCREASING)
-//             return ("" + a.completed).localeCompare("" + b.completed);
-//         else
-//             return ("" + b.completed).localeCompare("" + a.completed);
-//     });
-//     return newItems;
-// }
-
-
-// <div style={{ border: "10px solid black", width: "600px", height: "800px", backgroundColor: "white" }}>
-//                         {this.state.controls.map((control) => {
-
-//                             return (<Rnd
-//                                 size={{ width: control.width, height: control.height }}
-//                                 position={{ x: control.x, y: control.y }}
-//                                 onDragStop={(e, d) => {
-//                                     this.updateState({
-//                                         key: control.key,
-//                                         x: d.x,
-//                                         y: d.y
-//                                     })
-//                                 }}
-
-//                                 // onDragStop={(e, d) => { this.setState({ x: d.x, y: d.y }) }}
-//                                 // onResizeStop={(e, direction, ref, delta, position) => {
-//                                 //     this.setState({
-//                                 //         width: ref.style.width,
-//                                 //         height: ref.style.height,
-//                                 //         ...position,
-//                                 //     });
-//                                 // }}
-//                                 bounds="parent"
-//                             >
-//                                 <div style={control}>
-
-//                                 </div>
-//                             </Rnd>)
-//                         })}
-
-//                     </div>

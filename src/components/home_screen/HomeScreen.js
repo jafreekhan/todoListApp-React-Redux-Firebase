@@ -9,17 +9,18 @@ import { getFirestore } from 'redux-firestore';
 class HomeScreen extends Component {
     handleNewList = () => {
         let newListData = {
-            name: 'Unnamed todolist',
-            owner: 'Unknown owner',
-            items: [],
+            name: 'Unnamed',
+            controls: [],
+            width: 600,
+            height: 600,
             time: Date.now(),
         }
         const fireStore = getFirestore();
-        let newList = fireStore.collection("todoLists").doc();
+        let newList = fireStore.collection("wireframes").doc();
         newList.set(newListData);
 
         this.props.history.push({
-            pathname: "todoList/" + newList.id,
+            pathname: "wireframes/" + newList.id,
             key: newList.id,
         });
     }
@@ -72,6 +73,6 @@ const mapStateToProps = (state) => {
 export default compose(
     connect(mapStateToProps),
     firestoreConnect([
-        { collection: 'todoLists', orderBy: ["time", "desc"] },
+        { collection: 'wireframes', orderBy: ["time", "desc"] },
     ]),
 )(HomeScreen);

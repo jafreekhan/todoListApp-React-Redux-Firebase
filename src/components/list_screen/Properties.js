@@ -15,8 +15,10 @@ class Properties extends Component {
         console.log('this.props :', this.props);
         const { control } = this.props;
         console.log('control :', control);
-        if (!control)
+        if (Object.keys(control).length === 0) {
+            console.log('unnselect')
             return (<div />)
+        }
 
         return (
             <div className="wireframe properties">

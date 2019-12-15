@@ -6,13 +6,12 @@ import WireFrameCard from './WireFrameCard';
 
 class WireFrameLinks extends React.Component {
     render() {
-        const todoLists = this.props.todoLists;
-        console.log(todoLists);
+        const wireframes = this.props.wireframes;
         return (
             <div className="todo-lists section">
-                {todoLists && todoLists.map(todoList => (
-                    <Link to={'/wireFrame/' + todoList.id} key={todoList.id}>
-                        <WireFrameCard todoList={todoList} />
+                {wireframes && wireframes.map(wireframe => (
+                    <Link to={'/wireframes/' + wireframe.id} key={wireframe.id}>
+                        <WireFrameCard wireframe={wireframe} />
                     </Link>
                 ))}
             </div>
@@ -22,7 +21,7 @@ class WireFrameLinks extends React.Component {
 
 const mapStateToProps = (state) => {
     return {
-        todoLists: state.firestore.ordered.todoLists,
+        wireframes: state.firestore.ordered.wireframes,
         auth: state.firebase.auth,
     };
 };
