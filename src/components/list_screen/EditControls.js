@@ -22,6 +22,7 @@ class EditControls extends Component {
                             case "label":
                                 node = <div style={control}> {control.text} </div>
                             case "textfield":
+                                node = <div style={control}> {control.text} </div>
                             default:
 
                         };

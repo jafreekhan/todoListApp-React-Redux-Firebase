@@ -15,7 +15,7 @@ class ListScreen extends Component {
     constructor(props) {
         super(props);
         console.log('this.props', this.props)
-        // console.log('wireframe', wireframe)
+        console.log('wireframe from list screen', this.props.wireframe)
         this.state = {
             controls: [],
             wireframeStyle: {
@@ -34,6 +34,7 @@ class ListScreen extends Component {
         const firestore = getFirestore();
 
         firestore.collection("wireframes").doc(id).get().then((data) => {
+            console.log('data.data().controls', data.data().controls)
             this.setState({
                 controls: data.data().controls
             })
@@ -83,7 +84,7 @@ class ListScreen extends Component {
 
     handleController = (id) => {
         let key = this.getHighKey();
-        console.log('id', id)
+        // console.log('id', id)
         let newcontroller;
         switch (id) {
             case "container":
@@ -123,7 +124,43 @@ class ListScreen extends Component {
                 }
                 break;
             case "label":
+                newcontroller = {
+                    key: key,
+                    type: "label",
+                    width: 80,
+                    height: 40,
+                    x: 0,
+                    y: 0,
+                    backgroundColor: "white",
+                    borderColor: "#dce775",
+                    borderStyle: "",
+                    borderWidth: 0,
+                    borderRadius: 0,
+                    color: '#ba68c8',
+                    fontSize: "12px",
+                    text: "Label",
+                    textalign: "center"
+                }
+                break;
             case "textfield":
+                newcontroller = {
+                    key: key,
+                    type: "textfield",
+                    width: 100,
+                    height: 40,
+                    x: 0,
+                    y: 0,
+                    backgroundColor: "#dce775",
+                    borderColor: "#dce775",
+                    borderStyle: "solid",
+                    borderWidth: 4,
+                    borderRadius: 10,
+                    color: '#ba68c8',
+                    fontSize: "12px",
+                    text: "textfield",
+                    textalign: "center"
+                }
+                break;
             default:
                 return;
         }
@@ -131,7 +168,7 @@ class ListScreen extends Component {
         this.setState({
             controls: [...this.state.controls, newcontroller]
         });
-        console.log('this.state :', this.state);
+        // console.log('this.state :', this.state);
     }
 
     unselect = () => {
@@ -165,6 +202,31 @@ class ListScreen extends Component {
         return controls.filter((c) => c.key === key)[0];
     }
 
+    saveWork = () => {
+        const id = this.props.id
+        const wire = this.props.wireframe
+        // console.log('id from listscreen', id)
+        const newControl = this.state.controls
+        const fireStore = getFirestore();
+        fireStore.collection('wireframes').get().then(function (querySnapshot) {
+            querySnapshot.forEach(function (doc) {
+                if (doc.id === id) {
+                    fireStore.collection('wireframes').doc(id).set({
+                        name: wire.name,
+                        height: wire.height,
+                        width: wire.height,
+                        controls: newControl,
+                        time: Date.now()
+                    })
+                }
+            })
+        });
+    }
+    closeWork = () => {
+        this.props.history.push({
+            pathname: "/"
+        });
+    }
     handleZoom = (zoomIn) => {
         const { width, height } = this.state.wireframeStyle;
         if (zoomIn) {
@@ -192,15 +254,34 @@ class ListScreen extends Component {
             return <Redirect to="/" />;
         }
 
+        const actions = <div> <Button className="green" onClick={() => this.saveWork()} modal="close"> Yes </Button> <Button className="green" modal="close">No</Button></div>
+        const closeAction = <div> <Button className="green" onClick={() => this.closeWork()} modal="close"> Yes </Button> <Button className="green" modal="close">No</Button></div>
+
         return (
             <Row>
-                <Col s={3}>
+                <Col s={3} className={"brown lighten-3"}>
                     <Row>
                         <Col s={6}>
                             <i class="large material-icons" onClick={() => this.handleZoom(true)}>zoom_in</i>
                         </Col>
                         <Col s={6}>
                             <i class="large material-icons" onClick={() => this.handleZoom(false)}>zoom_out</i>
+                        </Col>
+                        <Col s={6}>
+                            {/* <i class="small" onClick={() => this.saveWork()}>Save</i> */}
+                            <Modal id={"save"} actions={actions} header="Save?" trigger={<Button class="small" onClick={() => this.saveWork()} >Save</Button>}>
+                                <p>
+                                    Are you sure you want to Save the list?
+                                </p>
+                            </Modal>
+                        </Col>
+                        <Col s={6}>
+                            {/* <i class="small" onClick={() => this.closeWork()}>Close</i> */}
+                            <Modal id={"close"} actions={closeAction} header="Close?" trigger={<Button class="small" onClick={() => this.closeWork()} >Close</Button>}>
+                                <p>
+                                    Are you sure you want to close the wireframe?
+                                </p>
+                            </Modal>
                         </Col>
 
                         <Col s={6}>
@@ -224,18 +305,18 @@ class ListScreen extends Component {
                             </div>
                         </Col>
                         <Col s={6}>
-                            <div id="label" className="add-container" onClick={(e) => this.handleController(e.target.id)}>
+                            <div id="label" className="add-label" onClick={(e) => this.handleController(e.target.id)}>
                                 Label
                             </div>
                         </Col>
 
                         <Col s={6}>
-                            <div id="button" className="add-container" onClick={(e) => this.handleController(e.target.id)}>
+                            <div id="button" className="add-button" onClick={(e) => this.handleController(e.target.id)}>
                                 Button
                             </div>
                         </Col>
                         <Col s={6}>
-                            <div id="textfield" className="add-container" onClick={(e) => this.handleController(e.target.id)}>
+                            <div id="textfield" className="add-textfield" onClick={(e) => this.handleController(e.target.id)}>
                                 Textfield
                             </div>
                         </Col>
@@ -269,6 +350,7 @@ const mapStateToProps = (state, ownProps) => {
     //     todoList.id = id;
     console.log('wireframe', wireframe)
     return {
+        id,
         wireframe,
         auth: state.firebase.auth,
     };

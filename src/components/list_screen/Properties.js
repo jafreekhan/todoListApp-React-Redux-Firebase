@@ -22,7 +22,7 @@ class Properties extends Component {
 
         return (
             <div className="wireframe properties">
-                <Row>
+                <Row className={"brown lighten-3"}>
 
                     <Col s={12}>
                         <span className="label"> Background Color</span>

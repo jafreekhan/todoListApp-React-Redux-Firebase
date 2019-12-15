@@ -11,7 +11,7 @@ class WireFrameLinks extends React.Component {
             <div className="todo-lists section">
                 {wireframes && wireframes.map(wireframe => (
                     <Link to={'/wireframes/' + wireframe.id} key={wireframe.id}>
-                        <WireFrameCard wireframe={wireframe} />
+                        <WireFrameCard wireframe={wireframe} key={wireframe.id} />
                     </Link>
                 ))}
             </div>
@@ -20,6 +20,7 @@ class WireFrameLinks extends React.Component {
 }
 
 const mapStateToProps = (state) => {
+    
     return {
         wireframes: state.firestore.ordered.wireframes,
         auth: state.firebase.auth,
