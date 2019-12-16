@@ -15,9 +15,14 @@ class LoggedInLinks extends React.Component {
 
   render() {
     const { profile } = this.props;
+    console.log(profile.admin)
+    if (profile.admin == true){
+      document.getElementById("db").style.visibility="visible";
+    }
     return (
       <ul className="right">
         <li><NavLink to="/" onClick={this.handleLogout}>Log Out</NavLink></li> {/* I left NavLink instead of anchor tag because I'm using airbnb eslint rules */}
+        <li><NavLink id="db" to="/databaseTester">DatabaseTester</NavLink></li> {/* I left NavLink instead of anchor tag because I'm using airbnb eslint rules */}
         <li><NavLink to="/" className="btn btn-floating pink lighten-1">{profile.initials}</NavLink></li>
       </ul>
     );

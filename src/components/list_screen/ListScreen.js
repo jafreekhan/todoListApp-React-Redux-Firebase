@@ -17,6 +17,7 @@ class ListScreen extends Component {
         console.log('this.props', this.props)
         console.log('wireframe from list screen', this.props.wireframe)
         this.state = {
+            name: "",
             controls: [],
             wireframeStyle: {
                 width: testJson.wireframes[0].width,
@@ -120,7 +121,8 @@ class ListScreen extends Component {
                     borderRadius: 10,
                     color: '#ba68c8',
                     fontSize: "12px",
-                    text: "button"
+                    text: "button",
+                    textalign: "center"
                 }
                 break;
             case "label":
@@ -131,13 +133,13 @@ class ListScreen extends Component {
                     height: 40,
                     x: 0,
                     y: 0,
-                    backgroundColor: "white",
+                    backgroundColor: "",
                     borderColor: "#dce775",
                     borderStyle: "",
                     borderWidth: 0,
                     borderRadius: 0,
                     color: '#ba68c8',
-                    fontSize: "12px",
+                    fontSize: "18px",
                     text: "Label",
                     textalign: "center"
                 }
@@ -249,6 +251,7 @@ class ListScreen extends Component {
 
     render() {
         const auth = this.props.auth;
+        const wire = this.props.wireframe
 
         if (!auth.uid) {
             return <Redirect to="/" />;
@@ -284,6 +287,13 @@ class ListScreen extends Component {
                             </Modal>
                         </Col>
 
+                        <Col s={12}>
+                            <TextInput
+                                defaultValue={"yerr"}
+                                label="Name"
+                                onChange={e => this.setState({ wireframeStyle: { ...this.state.wireframeStyle, width: e.target.value } })}
+                            />
+                        </Col>
                         <Col s={6}>
                             <TextInput
                                 defaultValue={this.state.wireframeStyle.width}

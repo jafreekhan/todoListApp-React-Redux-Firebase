@@ -104,3 +104,7 @@ input[type=password]:not(.browser-default):focus:not([readonly]) + label{
   background-color: white;
   border: 5px solid black;
 }
+
+#db {
+  visibility: hidden;
+}
