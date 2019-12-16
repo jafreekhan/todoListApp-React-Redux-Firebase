@@ -45,6 +45,19 @@ class ListScreen extends Component {
         window.removeEventListener("keydown", this.handleKeyDown);
     }
 
+    handleChange = (e) => {
+        const { target } = e;
+
+        this.setState(state => ({
+            ...state,
+            [target.id]: target.value,
+        }));
+
+        const fireStore = getFirestore();
+        let dbitem = fireStore.collection('wireframes').doc(this.props.wireframe.id);
+        dbitem.update({ [target.id]: target.value });
+    }
+
     handleKeyDown = (event) => {
         console.log('event.keyCode', event.keyCode)
         if (event.ctrlKey && event.keyCode === 68) {
@@ -251,7 +264,10 @@ class ListScreen extends Component {
 
     render() {
         const auth = this.props.auth;
-        const wire = this.props.wireframe
+        let name = "Unnamed"
+        if (this.props.wireframe != undefined)
+            name = this.props.wireframe.name
+        
 
         if (!auth.uid) {
             return <Redirect to="/" />;
@@ -279,7 +295,6 @@ class ListScreen extends Component {
                             </Modal>
                         </Col>
                         <Col s={6}>
-                            {/* <i class="small" onClick={() => this.closeWork()}>Close</i> */}
                             <Modal id={"close"} actions={closeAction} header="Close?" trigger={<Button class="small" onClick={() => this.closeWork()} >Close</Button>}>
                                 <p>
                                     Are you sure you want to close the wireframe?
@@ -288,11 +303,11 @@ class ListScreen extends Component {
                         </Col>
 
                         <Col s={12}>
-                            <TextInput
-                                defaultValue={"yerr"}
-                                label="Name"
-                                onChange={e => this.setState({ wireframeStyle: { ...this.state.wireframeStyle, width: e.target.value } })}
-                            />
+                            <div className="input-field col s6">
+                                <label className="active text_16" htmlFor="name">List Name</label>
+                                <input className="text_20" type="text" name="name" id="name" defaultValue={name} />
+                            </div>
+
                         </Col>
                         <Col s={6}>
                             <TextInput
